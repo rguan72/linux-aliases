@@ -1,26 +1,43 @@
-alias gb="gt branch"
-alias gbc="gt branch create -m"
-alias gbca="gt branch create -a -m"
-alias gco="git checkout"
+alias gb="git branch"
+gbc_function() {
+    branch_name="richard/$1" # swap out the prefix with your name
+    git checkout -b "$branch_name"
+}
+delete_merged_branches() {
+    for branch in $(git branch | sed 's/\*//'); do
+        pr=$(gh pr list --head "$branch" -s closed --json state,number -q '.[] | select(.state=="MERGED" or .state=="CLOSED") | .number')
+        if [ ! -z "$pr" ]; then
+            echo "Deleting branch $branch as its PR #$pr is merged or closed."
+            git branch -d "$branch"
+        else
+            echo "Branch $branch does not have a merged or closed PR."
+        fi
+    done
+}
+kill_process_on_port() {
+    if [ -z "$1" ]; then
+        echo "Usage: kill_process_on_port <port>"
+        return 1
+    fi
+    local port=$1
+    echo "Killing process on port $port..."
+    lsof -i tcp:${port} | awk 'NR!=1 {print $2}' | xargs -r kill
+    echo "Process on port $port killed (if it was running)."
+}
+alias gbc="gbc_function" # create branch prefixed by your name 
 alias gau="git add -u"
-alias gcm="gt commit create -m"
+alias gco="git checkout"
 alias gcom="git checkout main"
-alias gacm="gt commit create -a -m"
-alias gd="gt diff"
-alias gdc="gt diff --cached"
-alias gg="gt grep"
-alias gpr="git pull --rebase"
-alias grs="gt repo sync"
+alias gd="git diff"
+alias gdc="git diff --cached"
+alias gg="git grep"
+alias gpre="git pull --rebase"
 alias gs="git status"
-alias gss="gt stack submit --publish --no-edit"
-alias gls="gt log short"
-alias gses="gt stack restack"
 alias ll="ls -al"
 alias gaa="git add ."
+alias gpr="gh pr create --template pull_request_template.md"
+alias gsa="git add . && git commit -m '.' && git push -u"
 alias gp="git push"
-alias diff="diff -u"
-alias scalamed="cd ~/medici; sbt 'project api' test:console"
-alias mdb="cd ~/medici; PGPASSWORD=postgres psql -h localhost -U postgres -d medici; cd -"
-alias dres="cd ~/medici/docker; docker compose down -v && docker compose up -d; cd -"
-alias sd="sqitch deploy"
+alias grs="git checkout main; git pull; delete_merged_branches"
 alias uuid="python -c 'import sys,uuid; sys.stdout.write(str(uuid.uuid4()))' | pbcopy && pbpaste && echo"
+alias kp="kill_process_on_port"
