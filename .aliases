@@ -1,4 +1,3 @@
-cat ~/.aliases
 alias gb="git branch"
 gbc_function() {
     branch_name="richard/$1" # swap out the prefix with your name
@@ -25,36 +24,6 @@ kill_process_on_port() {
     lsof -i tcp:${port} | awk 'NR!=1 {print $2}' | xargs -r kill
     echo "Process on port $port killed (if it was running)."
 }
-vespa-yql() {
-  echo "Vespa YQL REPL (type 'exit' or press Enter on empty line to quit)"
-  echo "Example: select * from sources * where true limit 10"
-
-  # check for jq
-  if command -v jq >/dev/null 2>&1; then
-    pretty_json=true
-  else
-    pretty_json=false
-  fi
-
-  while true; do
-    if [ -n "$ZSH_VERSION" ]; then
-      read "?vespa> " yql
-    else
-      read -p "vespa> " yql
-    fi
-
-    if [[ -z "$yql" || "$yql" == "exit" ]]; then
-      echo "Bye!"
-      break
-    fi
-
-    if $pretty_json; then
-      vespa query "$yql" | jq
-    else
-      vespa query "$yql"
-    fi
-  done
-}
 alias gbc="gbc_function" # create branch prefixed by your name 
 alias gau="git add -u"
 alias gco="git checkout"
@@ -72,6 +41,3 @@ alias gp="git push"
 alias grs="git checkout main; git pull; delete_merged_branches"
 alias uuid="python -c 'import sys,uuid; sys.stdout.write(str(uuid.uuid4()))' | pbcopy && pbpaste && echo"
 alias kp="kill_process_on_port"
-alias pql="PGPASSWORD='password' psql -h localhost -p 5432 -U postgres -d postgres"
-alias rd="redis-cli"
-alias vs="vespa-yql"
